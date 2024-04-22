@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
 
     utils::read_inputs_and_initialize(input_filename);
 
-    // 设置OpenMP线程数
-    int nlst[5] = {1,2,4,6,16};
+    int nlst[5] = {1,2,4,8,16};
+    string slst[5] = {"1","2","4","8","16"};
     int num = 0;
     for (num = 0;num < 5;num++){
     int num_threads = nlst[num];
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     cout << "num_threads = " << num_threads << "  ";
 
     utils::lu_decomposition();
-    string out_name = output_filename + to_string(num_threads) + string(".txt");
+    string out_name = output_filename + slst[num] + string(".txt");
     utils::write_outputs(out_name);
     }
 
