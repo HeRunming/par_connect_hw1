@@ -55,14 +55,14 @@ namespace utils {
     void lu_decomposition() {
         // 开始计时
         auto start = chrono::high_resolution_clock::now();
-        #pragma omp parallel for
         for (int j = 0; j < N; ++j) {
             for (int i = j + 1; i < N; ++i) {
                 L[i * N + j] = U[i * N + j] / U[j * N + j];
+                #pragma omp parallel for
                 for (int k = j; k < N; ++k) {
                     U[i * N + k] -= L[i * N + j] * U[j * N + k];
                 }
-            }
+            }s
         }
 
         // 结束计时
@@ -106,12 +106,17 @@ int main(int argc, char* argv[]) {
     utils::read_inputs_and_initialize(input_filename);
 
     // 设置OpenMP线程数
-    int num_threads = 8; // 您可以根据需要修改这个值
+    int nlst[5] = {1,2,4,6,16};
+    int num = 0;
+    for (num = 0;num < 5;num++){
+    int num_threads = nlst[num];
     omp_set_num_threads(num_threads);
+    cout << "num_threads = " << num_threads << "  ";
 
     utils::lu_decomposition();
-
-    utils::write_outputs(output_filename);
+    string out_name = output_filename + to_string(num_threads) + string(".txt");
+    utils::write_outputs(out_name);
+    }
 
     return 0;
 }
