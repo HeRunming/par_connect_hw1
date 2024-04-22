@@ -98,7 +98,11 @@ int main(int argc, char* argv[]) {
 
     utils::read_inputs_and_initialize(input_filename);
 
+    auto start = chrono::high_resolution_clock::now();
     utils::lu_decomposition();
+    auto end = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+    cout << "Parallel LU decomposition took " << duration.count() << " microseconds." << endl;
 
     utils::write_outputs(output_filename);
 
