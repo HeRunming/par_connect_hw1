@@ -43,7 +43,7 @@ namespace utils {
         L.resize(N * N);
         U.resize(N * N);
 
-        U = mat;
+        U = mat; // 改为深拷贝
 
         // Initialize L to identity matrix
         for (int i = 0; i < N; ++i) {
@@ -52,23 +52,26 @@ namespace utils {
         return 0;
     }
 
+
     void lu_decomposition() {
         // 开始计时
+        double div = 1.0;
         auto start = chrono::high_resolution_clock::now();
-        for (int j = 0; j < N; ++j) {
-            #pragma omp parallel for
-            for (int i = j + 1; i < N; ++i) {
-                L[i * N + j] = U[i * N + j] / U[j * N + j];
-                for (int k = j; k < N; ++k) {
-                    U[i * N + k] -= L[i * N + j] * U[j * N + k];
+        for (int i = 0; i < N; ++i) {
+            div = 1.0 / mat[i * N + i];
+            #pragma omp for schedule(static)
+            for (int j = i + 1; j < N; ++j) {
+                L[j * N + i] = mat[j * N + i] * div;}
+            #pragma omp parallel for schedule(static)
+            for (int j = i + 1; j < N; ++j) {
+                for (int k = i ; k < N; ++k) {
+                    U[j * N + k] -= L[j * N + i] * U[i * N + k];
                 }
-            }
-        }
-
+            }}
+        
         // 结束计时
         auto end = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
-
         // 输出并行计算所用的时间
         cout << "Parallel LU decomposition took " << duration.count() << " microseconds." << endl;
     }
@@ -109,16 +112,13 @@ int main(int argc, char* argv[]) {
     string slst[5] = {"1","2","4","8","16"};
     int num = 0;
     for (num = 0;num < 5;num++){
-        utils::U.clear();
-        utils::L.clear();
-        utils::read_inputs_and_initialize(input_filename);
-        int num_threads = nlst[num];
-        omp_set_num_threads(num_threads);
-        cout << "num_threads = " << num_threads << "  ";
+    int num_threads = nlst[num];
+    omp_set_num_threads(num_threads);
+    cout << "num_threads = " << num_threads << "  ";
 
-        utils::lu_decomposition();
-        string out_name = output_filename + slst[num] + string(".txt");
-        utils::write_outputs(out_name);
+    utils::lu_decomposition();
+    string out_name = output_filename + slst[num] + string(".txt");
+    utils::write_outputs(out_name);
     }
 
     return 0;
